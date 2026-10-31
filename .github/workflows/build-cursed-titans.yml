@@ -1,0 +1,46 @@
+
+name: Build Cursed Titans (NeoForge 1.21.11)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Gradle 9.2.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+
+      - name: Unpack source archive
+        run: |
+          mkdir build_src
+          unzip -q CursedTitans_GitHub_Build_1.21.11.zip -d build_src
+
+      - name: Compile mod
+        working-directory: build_src
+        run: gradle clean build --no-daemon --stacktrace
+
+      - name: Upload compiled JAR
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cursed-Titans-3D-Armor
+          path: build_src/build/libs/*.jar
+          if-no-files-found: error
+          
